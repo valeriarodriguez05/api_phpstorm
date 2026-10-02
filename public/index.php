@@ -16,7 +16,7 @@ require __DIR__ . '/../vendor/autoload.php';
 $containerBuilder = new ContainerBuilder();
 
 if (false) { // Should be set to true in production
-	$containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
+    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
 }
 
 // Set up settings
@@ -46,6 +46,10 @@ $middleware($app);
 // Register routes
 $routes = require __DIR__ . '/../app/routes.php';
 $routes($app);
+// Inclusion des routes JWT (fichier dans src/routes)
+(require __DIR__ . '/../src/routes/routesJWT.php')($app);
+// Inclusion des routes du Repository (fichier dans src/routes)
+(require __DIR__ . '/../src/routes/routesApi.php')($app);
 
 /** @var SettingsInterface $settings */
 $settings = $container->get(SettingsInterface::class);
