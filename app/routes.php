@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Actions\User\ListUsersAction;
 use App\Application\Actions\User\ViewUserAction;
+use App\Middleware\JwtMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
@@ -23,7 +24,7 @@ return function (App $app) {
     $app->group('/users', function (Group $group) {
         $group->get('', ListUsersAction::class);
         $group->get('/{id}', ViewUserAction::class);
-    });
+    })->add(new JwtMiddleware());
 
     // Tous les artistes
     $app->get('/GetAllArtist', function (Request $request, Response $response) {
@@ -34,7 +35,7 @@ return function (App $app) {
         $payload = json_encode($data);
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
-    });
+    })->add(new JwtMiddleware());
 
     // Un artiste par id
     $app->get('/getArtistById/{id}', function (Request $request, Response $response, array $args) {
@@ -47,7 +48,7 @@ return function (App $app) {
         $payload = json_encode($data);
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
-    });
+    })->add(new JwtMiddleware());
 
     // Ajouter un artiste
     $app->post('/AddArtist', function (Request $request, Response $response, array $args) {
@@ -68,5 +69,5 @@ return function (App $app) {
         $payload = json_encode(['message' => 'Artiste ajouté avec succès', 'idArtist' => $insertedID]);
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
-    });
+    })->add(new JwtMiddleware());
 };
