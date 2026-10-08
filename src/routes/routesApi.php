@@ -18,12 +18,12 @@ return function (App $app) {
         // ---------- ARTISTS ----------
 
         $group->get('/artists', function (Request $request, Response $response) {
-            $repo = $this->get(ArtistRepository::class);   // PHP-DI injecte PDO tout seul
-            $response->getBody()->write(json_encode($repo->findAll()));   // objets Artist → JSON
+            $repo = $this->get(ArtistRepository::class);
+            $response->getBody()->write(json_encode($repo->findAll()));
             return $response->withHeader('Content-Type', 'application/json');
         });
 
-        // Routes spécifiques AVANT /artists/{id}
+        // Routes spécifiques, TOUJOURS avant /artists/{id}
         $group->get('/artists/annees', function (Request $request, Response $response) {
             $repo = $this->get(ArtistRepository::class);
             $response->getBody()->write(json_encode($repo->findAllAnnees()));
@@ -34,6 +34,20 @@ return function (App $app) {
             $repo = $this->get(ArtistRepository::class);
             $response->getBody()->write(json_encode($repo->findAllVilles()));
             return $response->withHeader('Content-Type', 'application/json');
+        });
+
+        $group->get('/artists/{id}/ville', function (Request $request, Response $response, array $args) {
+            $ville = $this->get(ArtistRepository::class)->findVilleById((int) $args['id']);
+            $response->getBody()->write(json_encode($ville !== null ? ['Ville' => $ville] : ['error' => 'Artiste introuvable']));
+            return $response->withHeader('Content-Type', 'application/json')
+                ->withStatus($ville !== null ? 200 : 404);
+        });
+
+        $group->get('/artists/{id}/annee', function (Request $request, Response $response, array $args) {
+            $annee = $this->get(ArtistRepository::class)->findAnneeById((int) $args['id']);
+            $response->getBody()->write(json_encode($annee !== null ? ['Annee' => $annee] : ['error' => 'Artiste introuvable']));
+            return $response->withHeader('Content-Type', 'application/json')
+                ->withStatus($annee !== null ? 200 : 404);
         });
 
         $group->get('/artists/{id}', function (Request $request, Response $response, array $args) {
@@ -57,7 +71,6 @@ return function (App $app) {
             return $response->withHeader('Content-Type', 'application/json');
         });
 
-        // Spécifique AVANT /albums/{id}
         $group->get('/albums/artist/{artistId}', function (Request $request, Response $response, array $args) {
             $repo = $this->get(AlbumRepository::class);
             $response->getBody()->write(json_encode($repo->findByArtistId((int) $args['artistId'])));
@@ -73,7 +86,7 @@ return function (App $app) {
 
         $group->post('/albums', function (Request $request, Response $response) {
             $id = $this->get(AlbumRepository::class)->insert((array) $request->getParsedBody());
-            $response->getBody()->write(json_encode(['idAlbums' => $id]));
+            $response->getBody()->write(json_encode(['idAlbum' => $id]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
         });
 
@@ -85,10 +98,9 @@ return function (App $app) {
             return $response->withHeader('Content-Type', 'application/json');
         });
 
-        // Spécifique AVANT /ratings/{id}
-        $group->get('/ratings/album/{albumId}', function (Request $request, Response $response, array $args) {
+        $group->get('/ratings/artist/{artistId}', function (Request $request, Response $response, array $args) {
             $repo = $this->get(RatingRepository::class);
-            $response->getBody()->write(json_encode($repo->findByAlbumId((int) $args['albumId'])));
+            $response->getBody()->write(json_encode($repo->findByArtistId((int) $args['artistId'])));
             return $response->withHeader('Content-Type', 'application/json');
         });
 
@@ -101,9 +113,9 @@ return function (App $app) {
 
         $group->post('/ratings', function (Request $request, Response $response) {
             $id = $this->get(RatingRepository::class)->insert((array) $request->getParsedBody());
-            $response->getBody()->write(json_encode(['idRatings' => $id]));
+            $response->getBody()->write(json_encode(['idRating' => $id]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
         });
 
-    })->add(new JwtMiddleware());   // toutes les routes /api sont protégées par le JWT
+    })->add(new JwtMiddleware());
 };

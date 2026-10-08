@@ -8,17 +8,17 @@ use PDO;
 class RatingRepository extends BaseRepository
 {
     protected string  $table = 'ratings';
-    protected string  $primaryKey = 'idRatings';                         // Exactement comme dans le .sql
-    protected array   $columns = ['Grade', 'Albums_idAlbums'];          // Colonnes exactes
+    protected string  $primaryKey = 'idRating';
+    protected array   $columns = ['stars', 'idArtist'];
     protected ?string $entityClass = Rating::class;
 
     /**
-     * Récupérer toutes les notes d'un album précis
+     * Récupérer toutes les notes d'un artiste précis
      */
-    public function findByAlbumId(int $albumId): array
+    public function findByArtistId(int $artistId): array
     {
-        $sth = $this->db->prepare("SELECT * FROM `ratings` WHERE `Albums_idAlbums` = :albumId");
-        $sth->execute(['albumId' => $albumId]);
+        $sth = $this->db->prepare("SELECT * FROM `ratings` WHERE `idArtist` = :artistId");
+        $sth->execute(['artistId' => $artistId]);
         return array_map([$this, 'hydrate'], $sth->fetchAll(PDO::FETCH_ASSOC));
     }
 }

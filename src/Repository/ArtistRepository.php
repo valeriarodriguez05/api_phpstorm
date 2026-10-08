@@ -10,7 +10,7 @@ class ArtistRepository extends BaseRepository
     protected string $table = 'artists';
     protected string $primaryKey = 'idArtist';
     protected array  $columns = ['Name', 'Annee', 'Description', 'Ville'];
-    protected ?string $entityClass = Artist::class;  // les méthodes renvoient des objets Artist
+    protected ?string $entityClass = Artist::class;
 
     // Méthode spécifique aux artistes (le CRUD est hérité)
     public function findByYear(int $annee): array
@@ -20,17 +20,35 @@ class ArtistRepository extends BaseRepository
         return array_map([$this, 'hydrate'], $sth->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    // Fonction spécifique : juste la liste des années (sans doublons)
+    // Liste de toutes les années (sans doublons)
     public function findAllAnnees(): array
     {
         $sth = $this->db->query("SELECT DISTINCT Annee FROM `artists` WHERE Annee IS NOT NULL ORDER BY Annee");
         return $sth->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    // Fonction spécifique : juste la liste des villes (sans doublons)
+    // Liste de toutes les villes (sans doublons)
     public function findAllVilles(): array
     {
         $sth = $this->db->query("SELECT DISTINCT Ville FROM `artists` WHERE Ville IS NOT NULL ORDER BY Ville");
         return $sth->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    // La ville d'un artiste précis, selon son id
+    public function findVilleById(int $id): ?string
+    {
+        $sth = $this->db->prepare("SELECT Ville FROM `artists` WHERE idArtist = :id");
+        $sth->execute(['id' => $id]);
+        $ville = $sth->fetchColumn();
+        return $ville !== false ? $ville : null;
+    }
+
+    // L'année d'un artiste précis, selon son id
+    public function findAnneeById(int $id): ?int
+    {
+        $sth = $this->db->prepare("SELECT Annee FROM `artists` WHERE idArtist = :id");
+        $sth->execute(['id' => $id]);
+        $annee = $sth->fetchColumn();
+        return $annee !== false ? (int) $annee : null;
     }
 }
